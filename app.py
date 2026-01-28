@@ -4,6 +4,11 @@ from flask import Flask, render_template_string, request, jsonify
 from werkzeug.utils import secure_filename
 from database import teachers_col
 from parser import run_ai_parser
+from flask import Flask, jsonify, request
+from flask_cors import CORS  # Import this
+
+app = Flask(__name__)
+CORS(app)
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'data'

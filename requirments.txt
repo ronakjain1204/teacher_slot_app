@@ -1,0 +1,7 @@
+flask
+pymongo
+openai
+pdf2image
+google-genai
+python-dotenv
+gunicorn

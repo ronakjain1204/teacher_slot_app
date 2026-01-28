@@ -1,7 +1,10 @@
 from pymongo import MongoClient
 
-# Establish the connection with MongoDB
-client = MongoClient("mongodb://localhost:27017/")
+# Use the connection string from your image
+# Note: I've included the password from your screenshot, but keep this private!
+uri = "mongodb+srv://ronakjain1204_db_user:qpBddb6xT4FxPCkh@cluster0.x7vhzra.mongodb.net/?appName=Cluster0"
+
+client = MongoClient(uri)
 db = client['timetable_db_ai']
 teachers_col = db['teachers']
 

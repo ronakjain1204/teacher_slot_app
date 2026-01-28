@@ -5,7 +5,7 @@ import time
 from io import BytesIO
 from openai import OpenAI
 from pdf2image import convert_from_path
-from teacher_slot_app.database import save_teacher_to_mongo
+from database import save_teacher_to_mongo
 
 # Configure kar rahe api key aur poppler path
 MY_API_KEY = "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"

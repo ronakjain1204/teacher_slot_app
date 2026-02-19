@@ -4,17 +4,14 @@ from flask import Flask, render_template_string, request, jsonify
 from werkzeug.utils import secure_filename
 from database import teachers_col
 from parser import run_ai_parser
-from flask import Flask, jsonify, request
-from flask_cors import CORS  # Import this
+from flask_cors import CORS 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app) # Fixed: Correct placement
 
-app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'data'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Full HTML template with Upload & Search
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html>
@@ -31,7 +28,14 @@ HTML_TEMPLATE = """
 <body>
     <div class="card">
         <h2>Faculty Finder</h2>
-        <select id="day"><option value="MONDAY">Monday</option><option value="TUESDAY">Tuesday</option></select>
+        <select id="day">
+            <option value="MONDAY">Monday</option>
+            <option value="TUESDAY">Tuesday</option>
+            <option value="WEDNESDAY">Wednesday</option>
+            <option value="THURSDAY">Thursday</option>
+            <option value="FRIDAY">Friday</option>
+            <option value="SATURDAY">Saturday</option>
+        </select>
         <input type="text" id="time" placeholder="Time (e.g., 09:30)">
         <button onclick="search()">Search Available Faculty</button>
         <div id="results"></div>
@@ -48,6 +52,7 @@ HTML_TEMPLATE = """
         async function search() {
             const day = document.getElementById('day').value;
             const time = document.getElementById('time').value;
+            // FIXED: Using relative path for the website itself
             const res = await fetch(`/api/free?day=${day}&time=${time}`);
             const data = await res.json();
             document.getElementById('results').innerHTML = data.map(t => `<div>✅ ${t.name}</div>`).join('');
@@ -73,21 +78,23 @@ def index(): return render_template_string(HTML_TEMPLATE)
 
 @app.route('/api/free')
 def get_free():
-    day = request.args.get('day').upper()
-    time = request.args.get('time')
+    day = request.args.get('day', 'MONDAY').upper()
+    time = request.args.get('time', '')
+    # This query finds teachers who DO NOT have a busy slot at this day/time
     query = {"busy_slots": {"$not": {"$elemMatch": {"day": day, "time": {"$regex": time}}}}}
     return jsonify(list(teachers_col.find(query, {"_id": 0, "name": 1})))
 
 @app.route('/api/upload', methods=['POST'])
-def upload():
+def upload_file():
     file = request.files.get('file')
     if file and file.filename.endswith('.pdf'):
-        path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
+        filename = secure_filename(file.filename)
+        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(path)
-        # Run parser in a background thread to prevent timeout
         threading.Thread(target=run_ai_parser, args=(path,)).start()
-        return jsonify({"message": "Upload started in background. Refresh in a few minutes."})
+        return jsonify({"message": "Upload started in background."})
     return jsonify({"error": "Invalid file"}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    # Use port 8080 for Render compatibility
+    app.run(host='0.0.0.0', port=8080)

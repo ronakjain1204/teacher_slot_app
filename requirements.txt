@@ -1,7 +1,6 @@
 flask
+flask-cors
+gunicorn
 pymongo
 openai
 pdf2image
-google-genai
-python-dotenv
-gunicorn

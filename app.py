@@ -95,6 +95,25 @@ def upload_file():
         return jsonify({"message": "Upload started in background."})
     return jsonify({"error": "Invalid file"}), 400
 
+@app.route('/api/free')
+def get_free():
+    day = request.args.get('day', 'MONDAY').upper()
+    time = request.args.get('time', '')
+    
+    # NEW QUERY: Look for teachers who have a matching slot explicitly marked as 'FREE'
+    query = {
+        "schedule": {
+            "$elemMatch": {
+                "day": day,
+                "time": {"$regex": time},
+                "status": "FREE"
+            }
+        }
+    }
+    
+    results = list(teachers_col.find(query, {"_id": 0, "name": 1}))
+    return jsonify(results)
+
 if __name__ == '__main__':
     # Use port 8080 for Render compatibility
     app.run(host='0.0.0.0', port=8080)
